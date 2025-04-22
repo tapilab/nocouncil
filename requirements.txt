@@ -1,2 +1,9 @@
+chromadb
+dotenv
+dspy
 Flask>=2.2
 gunicorn>=20.1
+markdown
+openai
+pandas
+sentence-transformers[onnx]

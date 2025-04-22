@@ -1,0 +1,50 @@
+# fly.toml app configuration file generated for nocouncil on 2025-04-21T17:14:11-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'nocouncil'
+primary_region = 'dfw'
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # The Flask app will bind to this port
+  PORT = "5000"
+  # Ollama will use this path to store/download models
+  OLLAMA_MODELS = "/models"
+
+[[mounts]]
+  source      = "ollama_models"
+  destination = "/models"
+
+
+# Flask service (web UI + JSON API)
+[[services]]
+  internal_port = 5000
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+
+# Ollama server service
+[[services]]
+  internal_port = 11434
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 11434
+    handlers = ["http"]
+
+
+[[vm]]
+  memory = '2gb'
+  cpu_kind = 'shared'
+  cpus = 1
