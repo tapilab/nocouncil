@@ -1,3 +1,13 @@
+"""
+Simple Flask app to serve a RAG model over video transcripts.
+- Reads chroma vector database from CHROMA_DB_DIR
+- Requires OPENAI_API_KEY
+- model set by OPENAI_MODEL (default: gpt-4o-mini)
+- port set by PORT (8080 default)
+
+NB: By default, embeds queries using all-MiniLM-L6-v2. The chroma db will
+need to use the same.
+"""
 import os
 import dspy
 from flask import Flask, request, jsonify, render_template_string
@@ -11,7 +21,6 @@ from dotenv import load_dotenv
 import json
 import markdown
 import multiprocessing
-# import ollama
 import openai
 import os
 import pandas as pd
@@ -21,28 +30,6 @@ chroma_client = PersistentClient(
     path='/models/chroma_db',            # where on disk to store
     settings=Settings(anonymized_telemetry=False)
 )
-
-
-class CiteReferences(dspy.Signature):
-    """Cite which references were used in the response."""
-    question: str = dspy.InputField()
-    answer: str = dspy.InputField()
-    context: list[str] = dspy.InputField()
-    indices: list[int] = dspy.OutputField(desc="a list of integers indicating which elements of the context list are in fact relevant to the answer")
-
-class ReferenceIsRelevant(dspy.Signature):
-    """Is the context related to the answer to this question?"""
-    question: str = dspy.InputField()
-    answer: str = dspy.InputField()
-    context: str = dspy.InputField()
-    relevant: bool = dspy.OutputField(desc="Is context related to the answer?")
-
-class CheckCitationFaithfulness(dspy.Signature):
-    """Determine whether the answer is supported by the provided context."""
-    answer: str = dspy.InputField()
-    context: str = dspy.InputField()
-    faithfulness: bool = dspy.OutputField(desc='True if the answer is supported by the context')
-    evidence: dict[str, list[str]] = dspy.OutputField(desc="Supporting evidence for claims")
 
 class RAGQuestion(dspy.Signature):
     """
@@ -156,11 +143,9 @@ def format_citations(result):
     return '\n<br>\n'.join(citations)
         
 
-lm = dspy.LM('openai/gpt-4o-mini', api_key=os.getenv("OPEN_AI_KEY"))
+lm = dspy.LM('openai/%s' % os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
+             api_key=os.getenv("OPEN_AI_KEY"))
 dspy.configure(lm=lm)
-# embed_fn = embedding_functions.HuggingFaceEmbeddingFunction(
-#     model_name="sentence-transformers/all-MiniLM-L6-v2",
-# )
 embed_fn = SentenceTransformerEmbeddingFunction(
     model_name="all-MiniLM-L6-v2",  # small, fast, 384‑dim
     device="cpu",                   # or "cuda"
