@@ -27,7 +27,7 @@ import pandas as pd
 import re
 
 chroma_client = PersistentClient(
-    path='/models/chroma_db',            # where on disk to store
+    path=os.getenv('CHROMA_DB_DIR', '/models/chroma_db'),# where on disk to store
     settings=Settings(anonymized_telemetry=False)
 )
 

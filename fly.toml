@@ -34,16 +34,6 @@ primary_region = 'dfw'
     handlers = ["tls", "http"]
 
 
-# Ollama server service
-[[services]]
-  internal_port = 11434
-  protocol      = "tcp"
-
-  [[services.ports]]
-    port     = 11434
-    handlers = ["http"]
-
-
 [[vm]]
   memory = '2gb'
   cpu_kind = 'shared'

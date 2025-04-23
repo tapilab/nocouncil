@@ -4,13 +4,13 @@ set -e
 # if /models is empty, seed it
 # if [ -z "$(ls -A /models/chroma_db)" ]; then
 echo "Seeding ChromaDB from remote archive…"
-curl -fsSL https://tulane.box.com/shared/static/zluxr3m4i9myyct7sot1ynhxbfe0q9jc.gz \
+curl -fsSL $CHROMA_URL \
 -o /tmp/chroma_db.tar.gz
-mkdir -p /models/chroma_db
-tar xzf /tmp/chroma_db.tar.gz -C /models/chroma_db
+mkdir -p $CHROMA_DB_DIR
+tar xzf /tmp/chroma_db.tar.gz -C $CHROMA_DB_DIR
 rm /tmp/chroma_db.tar.gz
-curl -fsSL https://tulane.box.com/shared/static/so39zx2l1tuxtlg23vze2cs6xezx3c93.jsonl \
--o /models/data.jsonl
+curl -fsSL DATA_URL \
+-o $FLY_DATA/data.jsonl
 # fi
 
 # dropping ollama...
