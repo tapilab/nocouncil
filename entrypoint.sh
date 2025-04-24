@@ -9,7 +9,7 @@ curl -fsSL $CHROMA_URL \
 mkdir -p $CHROMA_DB_DIR
 tar xzf /tmp/chroma_db.tar.gz -C $CHROMA_DB_DIR
 rm /tmp/chroma_db.tar.gz
-curl -fsSL DATA_URL \
+curl -fsSL $DATA_URL \
 -o $FLY_DATA/data.jsonl
 # fi
 

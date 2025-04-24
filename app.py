@@ -91,7 +91,7 @@ def embed_video(video_id, video_url, seek):
         </script>
     """ % (video_id, video_url, video_id, video_id, video_id, video_id, int(seek))
 
-def citation2html(citation_no, row, start_time, txt, summary):
+def citation2html(i, citation_no, row, start_time, txt, summary):
     video_num = 'video%d' % citation_no
     return """
     <details>
@@ -119,7 +119,7 @@ def citation2html(citation_no, row, start_time, txt, summary):
       </div>
     </details>
     """ % (
-        citation_no,
+        i,
         row.title, row.date,
         markdown.markdown(summary, extensions=["fenced_code", "tables"]),
         video_num, row.box_link, video_num, video_num, 
@@ -129,8 +129,7 @@ def citation2html(citation_no, row, start_time, txt, summary):
 
 def format_citations(result):
     citations = []
-    print(result['meta'])
-    for c in result.citations:
+    for i, c in enumerate(result.citations):
         num = int(re.findall('([\d+])', c)[0])
         meta = result['meta'][num]
         # jfile = PATH + re.sub('.summary', '.json', meta['file'].split('/')[-1])
@@ -139,7 +138,7 @@ def format_citations(result):
         txt = 'tbd' # get_text_by_ids(js, meta['start_id'], meta['end_id'])
         row = df[df.video.str.contains(mfile)].iloc[0]
         citations.append(
-            citation2html(num, row, meta['start_time'], txt, result['documents'][num]))
+            citation2html(i+1, num, row, meta['start_time'], txt, result['documents'][num]))
     return '\n<br>\n'.join(citations)
         
 
@@ -158,7 +157,7 @@ collection = chroma_client.get_or_create_collection(
         metadata={"hnsw:space": "cosine",
                   "hnsw:num_threads": 1}
         )
-df = pd.read_json('/models/data.jsonl', lines=True)
+df = pd.read_json(os.environ.get("FLY_DATA") + '/data.jsonl', lines=True)
 rag = RAG(collection)
 
 app = Flask(__name__)
@@ -176,6 +175,15 @@ HTML_TEMPLATE = '''
   <h1>Ask a question</h1>
   <form method="post">
     <textarea name="question" rows="4" cols="60" placeholder="Type your question here...">{{ question or '' }}</textarea><br>
+    <label for="n_results">Max number of references:</label>
+    <select name="n_results" id="n_results">
+      {% for val in [5,10,15,20] %}
+        <option value="{{ val }}"
+          {% if val == n_results %}selected{% endif %}>
+          {{ val }}
+        </option>
+      {% endfor %}
+    </select>
     <button type="submit">Ask</button>
   </form>
   {% if answer %}
@@ -192,10 +200,15 @@ def index():
     question = None
     if request.method == "POST":
         question = request.form.get("question", "").strip()
+        try:
+            n_results = int(request.form.get("n_results", 5))
+        except ValueError:
+            n_results = 5        
         if question:
-             result = rag(question=question, n_results=5)
-             answer = result.response + '<br><br>\n' + format_citations(result)
-    return render_template_string(HTML_TEMPLATE, question=question, answer=answer)
+             result = rag(question=question, n_results=n_results)
+             answer = re.sub(r'[\[\(]CITATION \d+[\]\)]', ' ', result.response) + '<br><br>\n' + format_citations(result)
+    return render_template_string(HTML_TEMPLATE, question=question, 
+        answer=answer, n_results=n_results)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

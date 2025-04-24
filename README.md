@@ -2,7 +2,11 @@
 
 Testing sandbox for a RAG system for searching City Council video transcripts.
 
-Pulls
+Reads Chroma vector database from CHROMA_URL and serves with Open AI.
+
+Running at https://nocouncil.fly.dev/
+
+See data processing at https://github.com/tapilab/nocouncil-etl
 
 ### configuring fly.io
 
@@ -19,3 +23,5 @@ curl -L https://fly.io/install.sh | sh
   - provision data `flyctl volumes create data --size 2`
 
 - 4. Set secrets: `flyctl secrets import < .env`
+
+- 5. Deploy: `flyctl deploy`
