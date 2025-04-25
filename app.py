@@ -9,6 +9,7 @@ NB: By default, embeds queries using all-MiniLM-L6-v2. The chroma db will
 need to use the same.
 """
 import os
+from datetime import datetime
 import dspy
 from flask import Flask, request, jsonify, render_template_string
 import chromadb
@@ -44,18 +45,35 @@ class RAGQuestion(dspy.Signature):
     citations: list[str] = dspy.OutputField(desc="List of citation sources used, e.g., [[CITATION 1], [CITATION 2]]")
     
     
+def filename2date(filename):
+    mp4 = re.sub('.summary', '.mp4', filename.split('/')[-1])
+    return df[df.video.str.contains(mp4)].iloc[0].date
+
 class RAG(dspy.Module):
     
     def __init__(self, collection):
         self.collection = collection
         self.respond = dspy.ChainOfThought(RAGQuestion)
 
-    def forward(self, question, n_results=5):
-        result = self.collection.query(query_texts=[question], n_results=n_results)
+    def forward(self, question, start_date, end_date, n_results=5):
+        start_dt = datetime.fromisoformat(start_date)
+        end_dt   = datetime.fromisoformat(end_date)
+        # convert to the same numeric type you stored
+        start_ts = int(start_dt.timestamp())
+        end_ts   = int(end_dt.timestamp())
+        where = {
+          "$and": [
+            {"date": {"$gte": start_ts}},
+            {"date": {"$lte": end_ts}}
+          ]
+        }
+        result = self.collection.query(query_texts=[question], 
+            n_results=n_results, where=where)
         context = result['documents'][0]
         context = '\n\n'.join('### [CITATION %i]\n%s' % (i,s) for i,s in enumerate(context))
         response = self.respond(context=context, question=question) 
         response['context'] = context
+        response['ids'] = result['ids'][0]
         response['documents'] = result['documents'][0]
         response['meta'] = result['metadatas'][0]
         response['distances'] = result['distances'][0]
@@ -158,6 +176,8 @@ collection = chroma_client.get_or_create_collection(
                   "hnsw:num_threads": 1}
         )
 df = pd.read_json(os.environ.get("FLY_DATA") + '/data.jsonl', lines=True)
+default_start = df.date.min().strftime("%Y-%m-%d")
+default_end   = df.date.max().strftime("%Y-%m-%d")
 rag = RAG(collection)
 
 app = Flask(__name__)
@@ -184,6 +204,13 @@ HTML_TEMPLATE = '''
         </option>
       {% endfor %}
     </select>
+    <br>
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date"
+           value="{{ start_date or '' }}">&nbsp;&nbsp;
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date"
+           value="{{ end_date or '' }}"><br>
     <button type="submit">Ask</button>
   </form>
   {% if answer %}
@@ -198,17 +225,25 @@ HTML_TEMPLATE = '''
 def index():
     answer = None
     question = None
+    n_results = 5
+    start_date = default_start
+    end_date   = default_end
     if request.method == "POST":
         question = request.form.get("question", "").strip()
+        start_date = request.form.get("start_date") or default_start
+        end_date   = request.form.get("end_date")   or default_end
+
         try:
             n_results = int(request.form.get("n_results", 5))
         except ValueError:
             n_results = 5        
         if question:
-             result = rag(question=question, n_results=n_results)
+             result = rag(question=question, n_results=n_results,
+                start_date=start_date, end_date=end_date)
              answer = re.sub(r'[\[\(]CITATION \d+[\]\)]', ' ', result.response) + '<br><br>\n' + format_citations(result)
     return render_template_string(HTML_TEMPLATE, question=question, 
-        answer=answer, n_results=n_results)
+        answer=answer, n_results=n_results,start_date=start_date, end_date=end_date)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
