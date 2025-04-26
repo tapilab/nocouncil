@@ -35,14 +35,13 @@ chroma_client = PersistentClient(
 class RAGQuestion(dspy.Signature):
     """
     Answer this question about New Orleans City Council meetings based only on the provided context.
-    Return a citation-aware response.
+    Cite as many relevant sources as you can with citation labels like [CITATION 1].
     """
     question: str = dspy.InputField()
     # Cite the sources you use with citation labels like [CITATION 1].
-    context: str = dspy.InputField() # desc='Passages with citation labels like [CITATION 1], [CITATION 2]')
-    # context: list[str] = dspy.InputField()
-    response: str = dspy.OutputField(desc='Answer with or without inline citations like [CITATION 1]')
-    citations: list[str] = dspy.OutputField(desc="List of citation sources used, e.g., [[CITATION 1], [CITATION 2]]")
+    context: str = dspy.InputField(desc='Passages with citation labels like [CITATION 1], [CITATION 2].')
+    response: str = dspy.OutputField(desc='Answer without inline citations.')
+    citations: list[str] = dspy.OutputField(desc="List of citation sources used, e.g., [[CITATION 1], [CITATION 2]]. Cite as many as are relevant.")
     
     
 def filename2date(filename):
@@ -232,7 +231,6 @@ def index():
         question = request.form.get("question", "").strip()
         start_date = request.form.get("start_date") or default_start
         end_date   = request.form.get("end_date")   or default_end
-
         try:
             n_results = int(request.form.get("n_results", 5))
         except ValueError:
@@ -240,7 +238,8 @@ def index():
         if question:
              result = rag(question=question, n_results=n_results,
                 start_date=start_date, end_date=end_date)
-             answer = re.sub(r'[\[\(]CITATION \d+[\]\)]', ' ', result.response) + '<br><br>\n' + format_citations(result)
+             # answer = re.sub(r'[\[\(]CITATION \d+[\]\)]', ' ', result.response) + '<br><br>\n' + format_citations(result)
+             answer = result.response + '<br><br>\n' + format_citations(result)
     return render_template_string(HTML_TEMPLATE, question=question, 
         answer=answer, n_results=n_results,start_date=start_date, end_date=end_date)
 
