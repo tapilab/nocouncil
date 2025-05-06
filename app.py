@@ -75,7 +75,7 @@ class RAG(dspy.Module):
         response['ids'] = result['ids'][0]
         response['documents'] = result['documents'][0]
         response['meta'] = result['metadatas'][0]
-        response['distances'] = result['distances'][0]
+        # response['distances'] = result['distances'][0]
         return response
 
 def get_text_by_ids(js, start, end, no_speech_thresh=.2):
@@ -108,7 +108,7 @@ def embed_video(video_id, video_url, seek):
         </script>
     """ % (video_id, video_url, video_id, video_id, video_id, video_id, int(seek))
 
-def citation2html(i, citation_no, row, start_time, txt, summary):
+def citation2html(i, citation_no, row, start_time, quotes, names, summary):
     video_num = 'video%d' % citation_no
     return """
     <details>
@@ -116,6 +116,10 @@ def citation2html(i, citation_no, row, start_time, txt, summary):
       <div style="padding:0.5em 1em;">
       <p>%s (%s)</p>
       <p>%s</p>
+      <p><i>Quotes</i><br>
+          %s
+      </p>
+      <p><i>Names:</i> %s </p>
       <video id="%s" width="640" height="360" controls preload="metadata">
         <source
           src="%s"
@@ -127,21 +131,14 @@ def citation2html(i, citation_no, row, start_time, txt, summary):
           document.getElementById('%s').currentTime = %s;
         });
       </script>
-      <details>
-        <summary>Transcript</summary>
-        <div style="padding:0.5em 1em;">
-          <p>%s</p>
-        </div>
-      </details>    
       </div>
     </details>
     """ % (
         i,
-        row.title, row.date,
+        row.title, str(row.date)[:10],
         markdown.markdown(summary, extensions=["fenced_code", "tables"]),
-        video_num, row.box_link, video_num, video_num, 
-        start_time,
-        txt
+        quotes, names, video_num, row.box_link, video_num, video_num, 
+        start_time
         )
 
 def format_citations(result):
@@ -152,10 +149,14 @@ def format_citations(result):
         # jfile = PATH + re.sub('.summary', '.json', meta['file'].split('/')[-1])
         mfile = re.sub('.summary', '.mp4', meta['file'].split('/')[-1])
         # js = [json.loads(j) for j in open(jfile)]
-        txt = 'tbd' # get_text_by_ids(js, meta['start_id'], meta['end_id'])
+        quotes = '<ul>'
+        for h in meta['quotes'].split('|||')[:3]:
+            quotes += '\n<li>"%s"</li>' % h
+        quotes += '\n</ul>\n'
+        names = ', '.join(sorted(meta['names'].split('|||')))
         row = df[df.video.str.contains(mfile)].iloc[0]
         citations.append(
-            citation2html(i+1, num, row, meta['start_time'], txt, result['documents'][num]))
+            citation2html(i+1, num, row, meta['start_time'], quotes, names, result['documents'][num]))
     return '\n<br>\n'.join(citations)
         
 
