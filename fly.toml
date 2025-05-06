@@ -39,9 +39,9 @@ primary_region = 'dfw'
   cpu_kind = 'shared'
   cpus = 1
 
-[checks]
-  [checks.daily-restart]
-  type = "script"
-  interval = "24h"
-  timeout = "5s"
-  script = "exit 1"
+#[checks]
+#  [checks.daily-restart]
+#  type = "script"
+#  interval = "24h"
+#  timeout = "5s"
+#  script = "exit 1"
