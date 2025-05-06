@@ -143,8 +143,12 @@ def citation2html(i, citation_no, row, start_time, quotes, names, summary):
 
 def format_citations(result):
     citations = []
+    cites_seen = set()
     for i, c in enumerate(result.citations):
         num = int(re.findall('([\d+])', c)[0])
+        if num in cites_seen: # skip
+            continue
+        cites_seen.add(num)
         meta = result['meta'][num]
         # jfile = PATH + re.sub('.summary', '.json', meta['file'].split('/')[-1])
         mfile = re.sub('.summary', '.mp4', meta['file'].split('/')[-1])
