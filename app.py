@@ -27,7 +27,7 @@ import os
 import pandas as pd
 import re
 
-load_dotenv()
+# load_dotenv()
 
 chroma_client = PersistentClient(
     path=os.getenv('CHROMA_DB_DIR', '/models/chroma_db'),# where on disk to store
