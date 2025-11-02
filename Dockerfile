@@ -2,7 +2,7 @@
 
 # FROM ubuntu:22.04
 
-FROM pytorch/pytorch:2.2.2-cpu
+FROM pytorch/pytorch:2.2.2-cpu-py39
 
 # ── Install system deps ──────────────────────────────────────────
 #RUN apt-get update && apt-get install -y \
