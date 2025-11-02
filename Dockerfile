@@ -1,8 +1,7 @@
 # Dockerfile
-
 # FROM ubuntu:22.04
 
-FROM pytorch/pytorch:2.2.2-cpu-py39
+FROM python:3.9-slim
 
 # ── Install system deps ──────────────────────────────────────────
 #RUN apt-get update && apt-get install -y \
@@ -14,7 +13,14 @@ FROM pytorch/pytorch:2.2.2-cpu-py39
 
 # ── Install Python deps ─────────────────────────────────────────
 WORKDIR /app
+
 RUN pip install --upgrade pip
+
+RUN pip install --upgrade pip \
+    && pip install torch==2.2.2+cpu torchvision==0.15.2+cpu \
+         --extra-index-url https://download.pytorch.org/whl/cpu
+
+
 COPY requirements.txt /app/requirements.txt
 #RUN pip3 install --no-cache-dir -r /app/requirements.txt
 # CPU-only install to save time/space.
