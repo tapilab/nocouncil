@@ -1,17 +1,20 @@
 # Dockerfile
 
-FROM ubuntu:22.04
+# FROM ubuntu:22.04
+
+FROM pytorch/pytorch:2.2.2-cpu
 
 # ── Install system deps ──────────────────────────────────────────
-RUN apt-get update && apt-get install -y \
-      curl tar ca-certificates python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+#RUN apt-get update && apt-get install -y \
+#      curl tar ca-certificates python3-pip \
+#    && rm -rf /var/lib/apt/lists/*
 
 # ── Install Ollama CLI + server ─────────────────────────────────
 # RUN curl -fsSL https://ollama.com/install.sh | sh
 
 # ── Install Python deps ─────────────────────────────────────────
 WORKDIR /app
+RUN pip install --upgrade pip
 COPY requirements.txt /app/requirements.txt
 #RUN pip3 install --no-cache-dir -r /app/requirements.txt
 # CPU-only install to save time/space.
