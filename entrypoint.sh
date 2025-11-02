@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-set -e
-set -a           # auto-export all variables
-source .env      # load .env file
-set +a
+# if running locally
+# set -e
+# set -a           # auto-export all variables
+# source .env      # load .env file
+# set +a
 # if /models is empty, seed it
 # if [ -z "$(ls -A /models/chroma_db)" ]; then
 echo "Seeding ChromaDB from remote archive…"
