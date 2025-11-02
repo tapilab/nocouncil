@@ -1,12 +1,12 @@
 # Dockerfile
-# FROM ubuntu:22.04
+FROM ubuntu:22.04
 
-FROM python:3.9-slim
+# FROM python:3.9-slim
 
 # ── Install system deps ──────────────────────────────────────────
-#RUN apt-get update && apt-get install -y \
-#      curl tar ca-certificates python3-pip \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+      curl tar ca-certificates python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 # ── Install Ollama CLI + server ─────────────────────────────────
 # RUN curl -fsSL https://ollama.com/install.sh | sh
@@ -15,10 +15,6 @@ FROM python:3.9-slim
 WORKDIR /app
 
 RUN pip install --upgrade pip
-
-RUN pip install --upgrade pip \
-    && pip install torch==2.2.2+cpu torchvision==0.15.2+cpu \
-         --extra-index-url https://download.pytorch.org/whl/cpu
 
 
 COPY requirements.txt /app/requirements.txt
