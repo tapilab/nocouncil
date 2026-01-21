@@ -1,0 +1,16 @@
+services:
+  nocouncil:
+    image: nocouncil:local
+    env_file: .env
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./:/app
+      # optional: persist seeded data so restarts don't re-download
+      - nocouncil_models:/models
+      - nocouncil_data:/data
+    command: gunicorn app:app --reload --bind 0.0.0.0:5003
+
+volumes:
+  nocouncil_models:
+  nocouncil_data:
