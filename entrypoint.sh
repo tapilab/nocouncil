@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # if running locally
-# set -e
+# Load .env only when running locally (i.e., not on Fly)
+if [[ -z "${FLY_APP_NAME:-}" ]]; then
+	set -e
+  echo "Local run detected (no FLY_APP_NAME) → loading .env"
+  set -a
+  source .env
+  set +a
+else
+  echo "Fly.io detected (FLY_APP_NAME=${FLY_APP_NAME}) → skipping .env"
+fi
 # set -a           # auto-export all variables
 # source .env      # load .env file
 # set +a
