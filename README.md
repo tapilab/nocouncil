@@ -8,7 +8,20 @@ Running at https://nocouncil.fly.dev/
 
 See data processing at https://github.com/tapilab/nocouncil-etl
 
-### local setup
+### Running locally with Docker
+
+1. [Install Docker](https://www.docker.com/get-started/) and make sure it is running.
+2. Clone this repo `git clone https://github.com/tapilab/nocouncil.git`
+3. Copy the [.env file](https://drive.google.com/drive/u/0/folders/12LjWYraAbP5pnLjob_c6FufouQPIdWUG) to the `nocouncil` folder
+4. From the `nocouncil` folder, run `./run-docker.sh`
+  - This will launch the app, running locally on http://0.0.0.0:5003
+  - Quit with `Ctrl-C`
+  
+As you make changes, re-running `./run-docker.sh` will launch the latest version
+
+
+
+### Running without Docker
 
 To run on your local machine:
 
