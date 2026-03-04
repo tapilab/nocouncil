@@ -127,7 +127,7 @@ ollama==0.4.8
 onnx==1.17.0
 onnxruntime==1.19.2
 openai==1.61.0
-openai-whisper==20240930
+#openai-whisper==20240930
 opentelemetry-api==1.32.1
 opentelemetry-exporter-otlp-proto-common==1.32.1
 opentelemetry-exporter-otlp-proto-grpc==1.32.1
