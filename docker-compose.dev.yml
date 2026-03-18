@@ -1,17 +1,6 @@
 services:
   nocouncil:
-    image: ghcr.io/tapilab/nocouncil:latest
+    build: .
     env_file: .env
     ports:
-      - "5003:5003"
-    volumes:
-      # ensures local code is used over image
-      - ./:/app
-      # optional: persist seeded data so restarts don't re-download
-      - nocouncil_models:/models
-      - nocouncil_data:/data
-    command: gunicorn app:app --reload --bind 0.0.0.0:5003
-
-volumes:
-  nocouncil_models:
-  nocouncil_data:
+      - "${PORT:-5003}:${PORT:-5003}"
