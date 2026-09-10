@@ -4,3 +4,5 @@ services:
     env_file: .env
     ports:
       - "${PORT:-5003}:${PORT:-5003}"
+    volumes:
+      - ./chroma_db:/models/chroma_db

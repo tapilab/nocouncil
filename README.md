@@ -1,12 +1,18 @@
 # nocouncil
 
-Testing sandbox for a RAG system for searching City Council video transcripts.
+RAG system for searching New Orleans City Council video transcripts and NOLA news articles.
 
-Reads Chroma vector database from CHROMA_URL and serves with Open AI.
+Reads a Chroma vector database (city council + news article collections) from `CHROMA_URL` and serves search results through a Flask app, using OpenAI for answer generation.
 
 Running at https://nocouncil.fly.dev/
 
 See data processing at https://github.com/tapilab/nocouncil-etl
+
+### Features
+
+- Semantic search over council meeting transcripts and NOLA news articles, with source citations linking back to the original video timestamp or article.
+- Deterministic transcript correction pipeline (`correction.py`) that fuzzy-corrects misheard street names and person names in transcripts, using `nola_streets.json`, `nola_names.json`, and `english_words.json` as reference dictionaries — no LLM calls involved.
+- `/admin` page for reviewing and adding entries to the correction dictionaries (and `hardcoded_corrections.json`) without editing files by hand.
 
 ### Running locally with Docker
 
